@@ -4,6 +4,7 @@ import { useStore } from '../store/useStore';
 import { supabase } from '../lib/supabaseClient';
 import Layout from '../components/layout/Layout';
 import MyBookings from '../components/profile/MyBookings';
+import MyJournal from '../components/profile/MyJournal';
 import { Loader2, Upload, User, Mail, Phone, Save, Camera } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -140,8 +141,8 @@ const Profile = () => {
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             className={`mb-8 p-4 border ${message.type === 'success'
-                                    ? 'bg-green-500/10 border-green-500/20 text-green-400'
-                                    : 'bg-red-500/10 border-red-500/20 text-red-400'
+                                ? 'bg-green-500/10 border-green-500/20 text-green-400'
+                                : 'bg-red-500/10 border-red-500/20 text-red-400'
                                 } text-xs uppercase tracking-wider`}
                         >
                             {message.text}
@@ -268,7 +269,6 @@ const Profile = () => {
                         </motion.div>
                     </div>
 
-                    {/* My Bookings Section */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -276,6 +276,16 @@ const Profile = () => {
                         className="mt-16"
                     >
                         <MyBookings userId={user.id} />
+                    </motion.div>
+
+                    {/* My Journal Section */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
+                        className="mt-24 pt-16 border-t border-white/5"
+                    >
+                        <MyJournal userId={user.id} />
                     </motion.div>
 
                 </div>
