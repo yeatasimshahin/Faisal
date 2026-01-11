@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+/* @theme {
+    --color-brand-red: #ff3b30;
+    --color-neu-bg: #1a1c20;
+    --color-neu-light: #22252a;
+    --color-neu-dark: #121417;
+} */
+
+:root {
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+    color-scheme: dark;
+
+    /* Neumorphic Tokens - Dark Mode */
+    --neu-bg: #1a1c20;
+    --neu-light: #22252a;
+    --neu-shadow-dark: #121417;
+    --neu-accent: #ff3b30;
+    --neu-accent-glow: rgba(255, 59, 48, 0.3);
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    background-color: var(--neu-bg);
+    color: #e2e8f0;
+    overflow-x: hidden;
+}
+
+/* Neumorphic Utilities */
+.neu-card {
+    background: var(--neu-bg);
+    box-shadow: 8px 8px 16px var(--neu-shadow-dark),
+        -8px -8px 16px var(--neu-light);
+    border-radius: 20px;
+}
+
+.neu-inset {
+    background: var(--neu-bg);
+    box-shadow: inset 4px 4px 8px var(--neu-shadow-dark),
+        inset -4px -4px 8px var(--neu-light);
+    border-radius: 12px;
+}
+
+.neu-button {
+    background: var(--neu-bg);
+    box-shadow: 4px 4px 8px var(--neu-shadow-dark),
+        -4px -4px 8px var(--neu-light);
+    transition: all 0.2s ease;
+}
+
+.neu-button:active {
+    box-shadow: inset 2px 2px 5px var(--neu-shadow-dark),
+        inset -2px -2px 5px var(--neu-light);
+}
+
+.neu-accent-button {
+    background: linear-gradient(145deg, #ff3b30, #d93229);
+    box-shadow: 4px 4px 8px var(--neu-shadow-dark),
+        -2px -2px 8px var(--neu-light);
+    color: white;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.neu-accent-button:hover {
+    box-shadow: 0 0 20px var(--neu-accent-glow),
+        4px 4px 12px var(--neu-shadow-dark);
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.neu-accent-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 0 10px var(--neu-accent-glow),
+        inset 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--neu-light);
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--neu-accent);
+}
+
+.glass-panel {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Smooth scrolling for anchor links */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--neu-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--neu-light);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #333;
+}
+
+/* Text Stroke Utility */
+.stroke-text {
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
+    color: transparent;
+}
+
+@keyframes movedown {
+    0% {
+        top: -100%;
+    }
+
+    100% {
+        top: 100%;
+    }
+}
+
+.animate-movedown {
+    animation: movedown 3s linear infinite;
+}
