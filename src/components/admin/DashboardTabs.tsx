@@ -1,4 +1,5 @@
 import React from 'react';
+import TestimonialManager from './TestimonialManager';
 import UserManagement from './UserManagement';
 import ContentEditor from './ContentEditor';
 import CouponManager from './CouponManager';
