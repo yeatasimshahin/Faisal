@@ -33,33 +33,49 @@ const ProjectDetails = () => {
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], [0, -50]);
 
+  // Linked Journal Entries
+  const [relatedJournal, setRelatedJournal] = useState<any[]>([]);
+
   useEffect(() => {
     const fetchProjectData = async () => {
       setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('slug', slug)
+          .single();
 
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('slug', slug)
-        .single();
+        if (error || !data) {
+          if (error) console.error('[ProjectDetails] Error fetching project:', error);
+          setLoading(false);
+          return;
+        }
 
-      if (error || !data) {
+        setProject(data as Project);
+
+        // Fetch related journal entries
+        const { data: journalData } = await supabase
+          .from('blogs')
+          .select('id, title, content, image_url, created_at')
+          .eq('project_id', data.id)
+          .order('created_at', { ascending: false });
+
+        if (journalData) setRelatedJournal(journalData);
+
+        const { data: nextData } = await supabase
+          .from('projects')
+          .select('title, slug, image_url')
+          .neq('id', data.id)
+          .limit(1)
+          .single();
+
+        if (nextData) setNextProject(nextData as any);
+      } catch (err) {
+        console.error('[ProjectDetails] Unexpected error:', err);
+      } finally {
         setLoading(false);
-        return;
       }
-
-      setProject(data as Project);
-
-      const { data: nextData } = await supabase
-        .from('projects')
-        .select('title, slug, image_url')
-        .neq('id', data.id)
-        .limit(1)
-        .single();
-
-      if (nextData) setNextProject(nextData as any);
-
-      setLoading(false);
     };
 
     fetchProjectData();
@@ -191,7 +207,7 @@ const ProjectDetails = () => {
         </section>
 
         {/* The Narrative */}
-        <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto">
+        <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto border-b border-white/5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-start">
             <div className="space-y-8 sticky top-32">
               <h2 className="text-3xl md:text-4xl font-light uppercase tracking-widest text-white">
@@ -228,7 +244,7 @@ const ProjectDetails = () => {
 
         {/* Visual Documentation (Masonry Gallery) */}
         {gallery.length > 0 && (
-          <section className="py-24 border-t border-white/5 bg-[#080808]">
+          <section className="py-24 border-b border-white/5 bg-[#080808]">
             <div className="container mx-auto px-6 md:px-12">
               <div className="text-center mb-16">
                 <h3 className="text-[10px] uppercase tracking-[0.3em] text-red-500 mb-2">
@@ -237,8 +253,8 @@ const ProjectDetails = () => {
                 <h2 className="text-4xl font-serif text-white">Project Gallery</h2>
               </div>
 
-              {/* CSS Columns Masonry */}
-              <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+              {/* Masonry-like Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {gallery.map((img, idx) => (
                   <motion.div
                     key={idx}
@@ -246,13 +262,13 @@ const ProjectDetails = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: idx * 0.05 }}
-                    className="break-inside-avoid relative group cursor-zoom-in overflow-hidden bg-zinc-900 border border-white/5"
+                    className="relative group cursor-zoom-in overflow-hidden bg-zinc-900 border border-white/5"
                     onClick={() => setLightboxIndex(idx)}
                   >
                     <img
                       src={img}
                       alt={`Gallery ${idx}`}
-                      className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100"
+                      className="w-full aspect-[4/5] object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100"
                     />
 
                     {/* Overlay */}
@@ -260,6 +276,46 @@ const ProjectDetails = () => {
                       <ZoomIn className="text-white opacity-80" size={32} />
                     </div>
                   </motion.div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Related Journal Entries */}
+        {relatedJournal.length > 0 && (
+          <section className="py-32 px-6 md:px-12 bg-[#050505]">
+            <div className="container mx-auto">
+              <div className="flex items-center justify-between mb-16 border-b border-white/5 pb-8">
+                <div>
+                  <span className="text-red-600 text-[10px] uppercase tracking-[0.4em] font-bold block mb-2">Defining the Space</span>
+                  <h2 className="text-4xl md:text-5xl font-serif text-white uppercase tracking-tighter">Journal Reflections</h2>
+                </div>
+                <Link to="/journal" className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 hover:text-white transition-colors">
+                  View Full Journal
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/5 border border-white/5">
+                {relatedJournal.map((entry, idx) => (
+                  <Link
+                    key={entry.id}
+                    to={`/blog/${entry.id}`}
+                    className="group bg-[#0a0a0a] p-8 hover:bg-zinc-950 transition-all duration-500 relative overflow-hidden"
+                  >
+                    <div className="aspect-video mb-6 overflow-hidden bg-zinc-900">
+                      <img src={entry.image_url} alt={entry.title} className="w-full h-full object-cover grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700" />
+                    </div>
+                    <span className="text-[8px] font-mono text-zinc-600 uppercase tracking-widest block mb-2">
+                      {new Date(entry.created_at).toLocaleDateString()}
+                    </span>
+                    <h4 className="text-xl font-serif text-white group-hover:text-red-600 transition-colors uppercase leading-[1.1]">
+                      {entry.title}
+                    </h4>
+                    <span className="absolute -bottom-2 -right-2 text-6xl font-serif text-white/[0.02] pointer-events-none">
+                      0{idx + 1}
+                    </span>
+                  </Link>
                 ))}
               </div>
             </div>

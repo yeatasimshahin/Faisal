@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import Layout from '../components/layout/Layout';
-import { Loader2, ArrowLeft, User, Calendar, Share2, Bookmark } from 'lucide-react';
+import { Loader2, ArrowLeft, User, Calendar, Share2, Bookmark, Box } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SEO from '../components/shared/SEO';
+import { useStore } from '../store/useStore';
 
 interface BlogPost {
   id: string;
@@ -16,28 +17,87 @@ interface BlogPost {
   profiles: {
     full_name: string;
   };
+  projects?: {
+    title: string;
+    slug: string;
+  };
 }
 
 const BlogDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useStore();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     const fetchPost = async () => {
       if (!id) return;
-      const { data, error } = await supabase
-        .from('blogs')
-        .select('*, profiles(full_name)')
-        .eq('id', id)
-        .single();
 
-      if (data) setPost(data as any);
-      setLoading(false);
+      try {
+        const { data, error } = await supabase
+          .from('blogs')
+          .select('*, profiles(full_name), projects(title, slug)')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+
+        if (data) {
+          setPost(data as any);
+
+          // Check if saved
+          if (user) {
+            const { data: savedData } = await supabase
+              .from('saved_blogs')
+              .select('id')
+              .eq('user_id', user.id)
+              .eq('blog_id', id)
+              .single();
+
+            if (savedData) setIsSaved(true);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching blog:', err);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchPost();
-  }, [id]);
+  }, [id, user]);
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    await navigator.clipboard.writeText(url);
+    alert('Link copied to clipboard');
+  };
+
+  const handleSave = async () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    if (isSaved) {
+      // Unsave
+      const { error } = await supabase
+        .from('saved_blogs')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('blog_id', id);
+
+      if (!error) setIsSaved(false);
+    } else {
+      // Save
+      const { error } = await supabase
+        .from('saved_blogs')
+        .insert({ user_id: user.id, blog_id: id });
+
+      if (!error) setIsSaved(true);
+    }
+  };
 
   if (loading) {
     return (
@@ -140,11 +200,18 @@ const BlogDetails = () => {
 
                 {/* Social/Utility row */}
                 <div className="flex gap-4">
-                  <button className="w-10 h-10 rounded-full border border-white/5 flex items-center justify-center text-zinc-500 hover:text-red-500 hover:border-red-500/50 transition-all">
+                  <button
+                    onClick={handleShare}
+                    className="w-10 h-10 rounded-full border border-white/5 flex items-center justify-center text-zinc-500 hover:text-red-500 hover:border-red-500/50 transition-all"
+                  >
                     <Share2 size={16} />
                   </button>
-                  <button className="w-10 h-10 rounded-full border border-white/5 flex items-center justify-center text-zinc-500 hover:text-red-500 hover:border-red-500/50 transition-all">
-                    <Bookmark size={16} />
+                  <button
+                    onClick={handleSave}
+                    className={`w-10 h-10 rounded-full border border-white/5 flex items-center justify-center transition-all ${isSaved ? 'bg-white text-black' : 'text-zinc-500 hover:text-red-500 hover:border-red-500/50'
+                      }`}
+                  >
+                    <Bookmark size={16} fill={isSaved ? "currentColor" : "none"} />
                   </button>
                 </div>
               </motion.div>
@@ -160,7 +227,18 @@ const BlogDetails = () => {
               >
                 <div className="flex items-center gap-4 mb-12">
                   <div className="h-[1px] w-12 bg-red-600" />
-                  <span className="text-[10px] uppercase font-bold tracking-[0.4em] text-red-600">Definition / Narrative</span>
+                  <span className="text-[10px] uppercase font-bold tracking-[0.4em] text-red-600 space-x-4">
+                    <span>Definition / Narrative</span>
+                    {post.projects?.title && (
+                      <Link
+                        to={`/project/${post.projects.slug}`}
+                        className="ml-8 text-zinc-500 hover:text-white transition-colors border-l border-white/10 pl-8 inline-flex items-center gap-2"
+                      >
+                        <Box size={12} />
+                        @{post.projects.title}
+                      </Link>
+                    )}
+                  </span>
                 </div>
 
                 <div className="space-y-8 text-zinc-400 font-light leading-relaxed text-lg lg:text-xl selection:bg-red-600/30">

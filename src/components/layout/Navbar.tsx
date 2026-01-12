@@ -40,7 +40,11 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${scrolled || mobileMenuOpen ? 'bg-black/80 backdrop-blur-md border-b border-white/5' : 'bg-transparent'
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${mobileMenuOpen
+          ? 'bg-neutral-900 border-b border-white/5'
+          : scrolled
+            ? 'bg-black/80 backdrop-blur-md border-b border-white/5'
+            : 'bg-transparent'
         }`}
     >
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -136,7 +140,7 @@ const Navbar = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 bg-black/95 backdrop-blur-xl z-40 flex flex-col items-center justify-center space-y-8 md:hidden"
+            className="fixed inset-0 bg-neutral-900 z-40 flex flex-col items-center justify-center space-y-8 md:hidden"
           >
             {navLinks.map((link) => (
               <a

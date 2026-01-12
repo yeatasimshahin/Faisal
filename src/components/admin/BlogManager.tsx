@@ -1,36 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import { Edit2, Trash2, Plus, Loader2, FileText } from 'lucide-react';
+import { Trash2, Loader2, FileText } from 'lucide-react';
 import Modal from '../ui/Modal';
-import BlogEditor from '../blog/BlogEditor';
 
 interface BlogPost {
   id: string;
   title: string;
   content: string;
   image_url: string;
+  project_id?: string;
   created_at: string;
   author_id: string;
   profiles: {
     full_name: string;
     email: string;
   };
+  projects?: {
+    title: string;
+  };
 }
 
 const BlogManager = () => {
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // States for actions
-  const [isEditing, setIsEditing] = useState(false);
-  const [selectedBlog, setSelectedBlog] = useState<BlogPost | undefined>(undefined);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const fetchBlogs = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('blogs')
-      .select('*, profiles(full_name, email)')
+      .select('*, profiles(full_name, email), projects(title)')
       .order('created_at', { ascending: false });
 
     if (!error && data) {
@@ -50,31 +49,6 @@ const BlogManager = () => {
     setBlogs(blogs.filter(b => b.id !== deletingId));
     setDeletingId(null);
   };
-
-  const handleEditOpen = (blog?: BlogPost) => {
-    setSelectedBlog(blog);
-    setIsEditing(true);
-  };
-
-  const handleEditSuccess = () => {
-    setIsEditing(false);
-    setSelectedBlog(undefined);
-    fetchBlogs();
-  };
-
-  // Render Full Screen Editor Overlay if Editing
-  if (isEditing) {
-    return (
-      <div className="fixed inset-0 z-[150] bg-[#0a0a0a] overflow-auto">
-        <BlogEditor
-          initialData={selectedBlog}
-          isEmbedded={true}
-          onSuccess={handleEditSuccess}
-          onCancel={() => setIsEditing(false)}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -96,12 +70,6 @@ const BlogManager = () => {
           <h3 className="text-lg font-serif text-white">Journal Management</h3>
           <p className="text-[10px] text-gray-500 uppercase tracking-widest">Total Entries: {blogs.length}</p>
         </div>
-        <button
-          onClick={() => handleEditOpen(undefined)}
-          className="flex items-center gap-2 px-6 py-3 bg-white text-black text-xs font-bold uppercase tracking-widest hover:bg-gray-200 transition-colors"
-        >
-          <Plus size={16} /> New Entry
-        </button>
       </div>
 
       {/* Blog Table */}
@@ -110,6 +78,7 @@ const BlogManager = () => {
           <thead>
             <tr className="bg-white/5 text-[10px] uppercase tracking-widest text-gray-400">
               <th className="py-4 px-6 font-normal">Entry</th>
+              <th className="py-4 px-6 font-normal">Project</th>
               <th className="py-4 px-6 font-normal">Author</th>
               <th className="py-4 px-6 font-normal">Published</th>
               <th className="py-4 px-6 font-normal text-right">Actions</th>
@@ -118,7 +87,7 @@ const BlogManager = () => {
           <tbody className="divide-y divide-white/5 text-sm">
             {loading ? (
               <tr>
-                <td colSpan={4} className="py-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto" /></td>
+                <td colSpan={5} className="py-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto" /></td>
               </tr>
             ) : blogs.length === 0 ? (
               <tr>
@@ -143,6 +112,13 @@ const BlogManager = () => {
                     </div>
                   </td>
                   <td className="py-4 px-6">
+                    {blog.projects?.title ? (
+                      <span className="text-red-500 text-xs uppercase font-bold">@{blog.projects.title}</span>
+                    ) : (
+                      <span className="text-gray-600 text-[10px] uppercase">Independent</span>
+                    )}
+                  </td>
+                  <td className="py-4 px-6">
                     <div className="flex flex-col">
                       <span className="text-white text-xs">{blog.profiles?.full_name || 'Unknown'}</span>
                       <span className="text-[10px] text-gray-500">{blog.profiles?.email}</span>
@@ -153,13 +129,6 @@ const BlogManager = () => {
                   </td>
                   <td className="py-4 px-6 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleEditOpen(blog)}
-                        className="p-2 text-zinc-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10"
-                        title="Edit Post"
-                      >
-                        <Edit2 size={14} />
-                      </button>
                       <button
                         onClick={() => setDeletingId(blog.id)}
                         className="p-2 text-zinc-400 hover:text-red-500 transition-colors bg-white/5 hover:bg-white/10"

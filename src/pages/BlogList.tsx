@@ -16,25 +16,35 @@ interface BlogPost {
   profiles: {
     full_name: string;
   };
+  projects?: {
+    title: string;
+  };
 }
 
 const BlogList = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useStore();
+  const { user, isAdmin } = useStore();
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPosts = async () => {
-      const { data, error } = await supabase
-        .from('blogs')
-        .select('*, profiles(full_name)')
-        .order('created_at', { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from('blogs')
+          .select('*, profiles(full_name), projects(title)')
+          .order('created_at', { ascending: false });
 
-      if (!error && data) {
-        setPosts(data as any);
+        if (error) {
+          console.error('[BlogList] Error fetching posts:', error);
+        } else if (data) {
+          setPosts(data as any);
+        }
+      } catch (err) {
+        console.error('[BlogList] Unexpected error:', err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     fetchPosts();
   }, []);
@@ -54,19 +64,6 @@ const BlogList = () => {
             </p>
           </div>
 
-          {/* Create Button (Visible if Logged In) */}
-          {user && (
-            <button
-              onClick={() => navigate('/blog/new')}
-              className="mt-8 md:mt-0 group relative px-8 py-4 bg-white text-black text-xs font-bold uppercase tracking-widest overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-red-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-              <div className="relative z-10 flex items-center gap-3 group-hover:text-white transition-colors">
-                <Plus size={16} />
-                <span>Compose Entry</span>
-              </div>
-            </button>
-          )}
         </div>
 
         {/* Blog Grid */}
@@ -109,10 +106,13 @@ const BlogList = () => {
                   <div className="space-y-4 flex-1 flex flex-col">
                     <div className="flex justify-between items-center text-[10px] uppercase tracking-widest text-gray-500 border-b border-white/5 pb-3">
                       <span className="text-red-500">{new Date(post.created_at).toLocaleDateString()}</span>
-                      <span>{post.profiles?.full_name || 'Editorial'}</span>
+                      <div className="flex items-center gap-2">
+                        {post.projects?.title && <span className="bg-white/5 px-2 py-0.5 text-zinc-400">@{post.projects.title}</span>}
+                        <span>{post.profiles?.full_name || 'Editorial'}</span>
+                      </div>
                     </div>
 
-                    <h2 className="text-3xl font-serif text-white group-hover:text-red-500 transition-colors leading-none">
+                    <h2 className="text-3xl font-serif text-white group-hover:text-red-500 transition-colors leading-none uppercase">
                       {post.title}
                     </h2>
 

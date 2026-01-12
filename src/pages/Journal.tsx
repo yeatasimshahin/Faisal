@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
-import { ArrowUpRight, Loader2, Maximize2, Plus } from 'lucide-react';
+import { ArrowUpRight, Loader2, Maximize2, Plus, Bookmark, Share2 } from 'lucide-react';
 import SEO from '../components/shared/SEO';
 import { useStore } from '../store/useStore';
 
@@ -13,28 +13,93 @@ interface Model {
     content: string;
     image_url: string;
     created_at: string;
+    projects?: {
+        title: string;
+    };
+    isSaved?: boolean;
 }
 
 const Journal = () => {
     const [models, setModels] = useState<Model[]>([]);
     const [loading, setLoading] = useState(true);
-    const { user } = useStore();
+    const { user, isAdmin } = useStore();
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchModels = async () => {
-            const { data, error } = await supabase
-                .from('blogs')
-                .select('*')
-                .order('created_at', { ascending: false });
+            try {
+                const { data: blogsData, error: blogsError } = await supabase
+                    .from('blogs')
+                    .select('*, projects(title)')
+                    .order('created_at', { ascending: false });
 
-            if (!error && data) {
-                setModels(data as Model[]);
+                if (blogsError) throw blogsError;
+
+                let mergedData = blogsData as Model[];
+
+                if (user) {
+                    const { data: savedData, error: savedError } = await supabase
+                        .from('saved_blogs')
+                        .select('blog_id')
+                        .eq('user_id', user.id);
+
+                    if (!savedError && savedData) {
+                        const savedIds = new Set(savedData.map(item => item.blog_id));
+                        mergedData = mergedData.map(blog => ({
+                            ...blog,
+                            isSaved: savedIds.has(blog.id)
+                        }));
+                    }
+                }
+                setModels(mergedData);
+            } catch (err) {
+                console.error('[Journal] Error fetching entries:', err);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
         fetchModels();
-    }, []);
+    }, [user]);
+
+    const handleSave = async (e: React.MouseEvent, blog: Model) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!user) {
+            navigate('/login');
+            return;
+        }
+
+        try {
+            if (blog.isSaved) {
+                const { error } = await supabase
+                    .from('saved_blogs')
+                    .delete()
+                    .eq('user_id', user.id)
+                    .eq('blog_id', blog.id);
+                if (error) throw error;
+            } else {
+                const { error } = await supabase
+                    .from('saved_blogs')
+                    .insert({ user_id: user.id, blog_id: blog.id });
+                if (error) throw error;
+            }
+
+            setModels(prev => prev.map(m =>
+                m.id === blog.id ? { ...m, isSaved: !m.isSaved } : m
+            ));
+        } catch (error) {
+            console.error('Error toggling save:', error);
+        }
+    };
+
+    const handleShare = async (e: React.MouseEvent, blogId: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const url = `${window.location.origin}/blog/${blogId}`;
+        await navigator.clipboard.writeText(url);
+        alert('Link copied to clipboard');
+    };
 
     return (
         <Layout>
@@ -81,18 +146,6 @@ const Journal = () => {
                         </div>
 
                         <div className="flex flex-col items-end text-right gap-8">
-                            {user && (
-                                <button
-                                    onClick={() => navigate('/blog/new')}
-                                    className="group relative px-8 py-4 bg-white text-black text-xs font-bold uppercase tracking-widest overflow-hidden"
-                                >
-                                    <div className="absolute inset-0 bg-red-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                                    <div className="relative z-10 flex items-center gap-3 group-hover:text-white transition-colors">
-                                        <Plus size={16} />
-                                        <span>Compose Entry</span>
-                                    </div>
-                                </button>
-                            )}
                             <div className="flex flex-col items-end">
                                 <span className="text-[10px] font-mono text-zinc-500 tracking-[0.3em] uppercase mb-2">Total Journal Entries</span>
                                 <span className="text-5xl font-serif text-white">{models.length.toString().padStart(2, '0')}</span>
@@ -147,7 +200,14 @@ const Journal = () => {
                                         {/* Content Section */}
                                         <div className="flex-1 flex flex-col pt-4">
                                             <div className="flex justify-between items-start mb-6">
-                                                <span className="text-[10px] font-mono text-red-600 tracking-widest">ENTRY_ID // 0{index + 1}</span>
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-[10px] font-mono text-red-600 tracking-widest uppercase">ENTRY // 0{index + 1}</span>
+                                                    {model.projects?.title && (
+                                                        <span className="text-[8px] uppercase tracking-widest text-zinc-500 font-bold">
+                                                            Project: {model.projects.title}
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <ArrowUpRight size={20} className="text-zinc-600 group-hover:text-red-600 transition-colors" />
                                             </div>
 
@@ -160,10 +220,26 @@ const Journal = () => {
                                             </p>
 
                                             {/* Call to action */}
-                                            <div className="mt-auto">
+                                            <div className="mt-auto flex items-center justify-between">
                                                 <div className="inline-flex items-center gap-4 group/btn">
                                                     <span className="text-[10px] uppercase font-bold tracking-[0.4em] text-white">Read Entry</span>
                                                     <div className="w-10 h-[1px] bg-red-600 group-hover/btn:w-16 transition-all duration-500" />
+                                                </div>
+
+                                                <div className="flex gap-4">
+                                                    <button
+                                                        onClick={(e) => handleShare(e, model.id)}
+                                                        className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-colors"
+                                                    >
+                                                        <Share2 size={14} />
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => handleSave(e, model)}
+                                                        className={`w-8 h-8 rounded-full border border-white/20 flex items-center justify-center transition-colors ${model.isSaved ? 'bg-white text-black' : 'hover:bg-white hover:text-black'
+                                                            }`}
+                                                    >
+                                                        <Bookmark size={14} fill={model.isSaved ? "currentColor" : "none"} />
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>

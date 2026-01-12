@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
 import SmoothScroll from './SmoothScroll';
 import { useStore } from '../../store/useStore';
@@ -39,9 +40,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
           <div className="flex flex-col items-center md:items-end gap-2">
             <span className="text-gray-500 text-xs uppercase tracking-widest">Stay Connected</span>
-            <a href="/subscribe" className="text-white hover:text-red-500 transition-colors text-sm border-b border-white/20 pb-0.5 hover:border-red-500">
+            <Link to="/subscribe" className="text-white hover:text-red-500 transition-colors text-sm border-b border-white/20 pb-0.5 hover:border-red-500">
               Join Our Inner Circle
-            </a>
+            </Link>
           </div>
         </div>
       </footer>

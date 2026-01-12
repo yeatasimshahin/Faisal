@@ -9,7 +9,6 @@ import Signup from './pages/Signup'
 import AdminDashboard from './pages/AdminDashboard'
 import BlogList from './pages/BlogList'
 import BlogDetails from './pages/BlogDetails'
-import BlogEditor from './components/blog/BlogEditor'
 import ProjectDetails from './pages/ProjectDetails'
 import BookNow from './pages/BookNow'
 import Profile from './pages/Profile'
@@ -51,7 +50,6 @@ function App() {
 
                     {/* Blog System */}
                     <Route path="/blog" element={<BlogList />} />
-                    <Route path="/blog/new" element={<BlogEditor />} />
                     <Route path="/blog/:id" element={<BlogDetails />} />
 
                     {/* Protected Admin Route - Matches /admin and /admin/* */}

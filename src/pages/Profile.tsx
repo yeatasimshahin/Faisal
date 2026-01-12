@@ -4,12 +4,12 @@ import { useStore } from '../store/useStore';
 import { supabase } from '../lib/supabaseClient';
 import Layout from '../components/layout/Layout';
 import MyBookings from '../components/profile/MyBookings';
-import MyJournal from '../components/profile/MyJournal';
+import SavedJournals from '../components/profile/SavedJournals';
 import { Loader2, Upload, User, Mail, Phone, Save, Camera } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Profile = () => {
-    const { user } = useStore();
+    const { user, isAdmin } = useStore();
     const navigate = useNavigate();
 
     // Form state
@@ -278,14 +278,14 @@ const Profile = () => {
                         <MyBookings userId={user.id} />
                     </motion.div>
 
-                    {/* My Journal Section */}
+                    {/* Saved Journal Section - For All Users */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.4 }}
                         className="mt-24 pt-16 border-t border-white/5"
                     >
-                        <MyJournal userId={user.id} />
+                        <SavedJournals userId={user.id} />
                     </motion.div>
 
                 </div>
