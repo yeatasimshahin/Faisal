@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Home, Landmark, Compass, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -71,9 +72,9 @@ const ModelsSection = () => {
                                     {model.description}
                                 </p>
 
-                                <button className={`group/btn flex items-center gap-2 text-xs uppercase tracking-widest transition-colors ${hoveredIndex === index ? 'text-white' : 'text-gray-500'}`}>
+                                <Link to="/projects" className={`group/btn flex items-center gap-2 text-xs uppercase tracking-widest transition-colors ${hoveredIndex === index ? 'text-white' : 'text-gray-500'}`}>
                                     Explore Model <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
-                                </button>
+                                </Link>
                             </div>
                         </motion.div>
                     ))}

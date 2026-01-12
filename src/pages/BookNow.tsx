@@ -47,6 +47,12 @@ const BookNow = () => {
         e.preventDefault();
         if (!user) return;
 
+        if (!formData.phone || formData.phone.length < 10) {
+            setErrorMessage('Please enter a valid phone number.');
+            setStatus('error');
+            return;
+        }
+
         setStatus('submitting');
         setErrorMessage('');
 
@@ -68,7 +74,7 @@ const BookNow = () => {
             setStatus('success');
 
         } catch (err: any) {
-            console.error('Booking error:', err);
+            // console.error('Booking error:', err);
             setErrorMessage(err.message || 'Failed to submit booking request.');
             setStatus('error');
         }

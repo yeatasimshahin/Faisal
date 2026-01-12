@@ -65,7 +65,7 @@ const FlipClock = ({ timezone }: { timezone: string }) => {
     const { h, m, s } = getTimeUnits();
 
     return (
-        <div className="flex flex-col items-end gap-3 mt-4">
+        <div className="flex flex-col items-start gap-3 mt-4 w-full">
             <div className="flex items-center gap-1.5">
                 <div className="flex gap-0.5">
                     <FlipUnit value={h[0]} /><FlipUnit value={h[1]} />
@@ -159,13 +159,16 @@ const LocationCard = ({ loc, index, hoveredIndex, setHoveredIndex, setActiveMap 
             </div>
 
             <div className="relative flex justify-between items-start">
-                <div className="flex flex-col gap-1">
-                    <span className="text-zinc-600 text-[10px] font-mono tracking-widest uppercase">P_LOC_0{index + 1}</span>
-                    {loc.coords && (
-                        <span className="text-zinc-500 text-[9px] font-mono tracking-tighter uppercase opacity-60 group-hover:opacity-100 transition-opacity">
-                            {loc.coords}
-                        </span>
-                    )}
+                <div className="flex flex-col items-start gap-4 w-full">
+                    <FlipClock timezone={loc.timezone} />
+                    <div className="flex flex-col gap-1">
+                        <span className="text-zinc-600 text-[10px] font-mono tracking-widest uppercase">P_LOC_0{index + 1}</span>
+                        {loc.coords && (
+                            <span className="text-zinc-500 text-[9px] font-mono tracking-tighter uppercase opacity-60 group-hover:opacity-100 transition-opacity">
+                                {loc.coords}
+                            </span>
+                        )}
+                    </div>
                 </div>
                 <div className="flex flex-col items-end">
                     <motion.div
@@ -177,7 +180,6 @@ const LocationCard = ({ loc, index, hoveredIndex, setHoveredIndex, setActiveMap 
                     >
                         <ArrowUpRight size={18} strokeWidth={1} />
                     </motion.div>
-                    <FlipClock timezone={loc.timezone} />
                 </div>
             </div>
 

@@ -36,7 +36,7 @@ export interface SiteSettings {
   admin_email: string | null
   admin_phone: string | null
   // Global Locations
-  global_locations_json: { city: string; country: string }[] | null
+  global_locations_json: { city: string; country: string; timezone: string; mapUrl?: string; coords?: string }[] | null
   // Maps
   google_maps_url: string | null
   created_at: string

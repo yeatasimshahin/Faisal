@@ -18,6 +18,9 @@ import Projects from './pages/Projects'
 import Journal from './pages/Journal'
 import Subscribe from './pages/Subscribe'
 
+import ErrorBoundary from './components/common/ErrorBoundary';
+import NotFound from './pages/NotFound';
+
 function App() {
     const { fetchSettings, checkUser } = useStore();
 
@@ -30,35 +33,37 @@ function App() {
 
     return (
         <HelmetProvider>
-            <BrowserRouter>
-                <ScrollToTop />
-                <Routes>
-                    {/* Public Routes */}
-                    <Route path="/" element={<Home />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
-                    <Route path="/book-now" element={<BookNow />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/contact" element={<Contact />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/projects" element={<Projects />} />
-                    <Route path="/journal" element={<Journal />} />
-                    <Route path="/subscribe" element={<Subscribe />} />
+            <ErrorBoundary>
+                <BrowserRouter>
+                    <ScrollToTop />
+                    <Routes>
+                        {/* Public Routes */}
+                        <Route path="/" element={<Home />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/signup" element={<Signup />} />
+                        <Route path="/book-now" element={<BookNow />} />
+                        <Route path="/profile" element={<Profile />} />
+                        <Route path="/contact" element={<Contact />} />
+                        <Route path="/about" element={<About />} />
+                        <Route path="/projects" element={<Projects />} />
+                        <Route path="/journal" element={<Journal />} />
+                        <Route path="/subscribe" element={<Subscribe />} />
 
-                    {/* Project Details System */}
-                    <Route path="/project/:slug" element={<ProjectDetails />} />
+                        {/* Project Details System */}
+                        <Route path="/project/:slug" element={<ProjectDetails />} />
 
-                    {/* Blog System */}
-                    <Route path="/blog" element={<BlogList />} />
-                    <Route path="/blog/:id" element={<BlogDetails />} />
+                        {/* Blog System */}
+                        <Route path="/blog" element={<BlogList />} />
+                        <Route path="/blog/:id" element={<BlogDetails />} />
 
-                    {/* Protected Admin Route - Matches /admin and /admin/* */}
-                    <Route path="/admin/*" element={<AdminDashboard />} />
+                        {/* Protected Admin Route - Matches /admin and /admin/* */}
+                        <Route path="/admin/*" element={<AdminDashboard />} />
 
-                    {/* Catch all */}
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-            </BrowserRouter>
+                        {/* Catch all */}
+                        <Route path="*" element={<NotFound />} />
+                    </Routes>
+                </BrowserRouter>
+            </ErrorBoundary>
         </HelmetProvider>
     )
 }

@@ -23,7 +23,7 @@ const ProjectShowcase = () => {
         .from('projects')
         .select('*')
         .order('created_at', { ascending: false });
-      
+
       if (!error && data) setProjects(data);
       setLoading(false);
     };
@@ -55,7 +55,7 @@ const ProjectShowcase = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-24">
           {projects.map((project, index) => (
-            <motion.div 
+            <motion.div
               key={project.id}
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -66,24 +66,25 @@ const ProjectShowcase = () => {
               <Link to={`/project/${project.slug}`} className="block">
                 <div className="overflow-hidden mb-6 relative aspect-[4/5] md:aspect-[3/4]">
                   <div className="absolute inset-0 bg-red-600/0 group-hover:bg-red-600/10 transition-colors z-10 duration-500" />
-                  <motion.img 
-                    src={project.image_url || 'https://via.placeholder.com/800x1000'} 
+                  <motion.img
+                    src={project.image_url || 'https://via.placeholder.com/800x1000'}
                     alt={project.title}
+                    loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 grayscale group-hover:grayscale-0"
                   />
-                  
+
                   <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="bg-white text-black p-3 rounded-full">
-                          <ArrowUpRight size={20} />
-                      </div>
+                    <div className="bg-white text-black p-3 rounded-full">
+                      <ArrowUpRight size={20} />
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-4 text-[10px] uppercase tracking-widest text-gray-500">
-                     {project.tags?.map((tag, i) => (
-                       <span key={i} className="border border-white/10 px-2 py-1 rounded-full">{tag}</span>
-                     ))}
+                    {project.tags?.map((tag, i) => (
+                      <span key={i} className="border border-white/10 px-2 py-1 rounded-full">{tag}</span>
+                    ))}
                   </div>
                   <h3 className="text-2xl font-serif text-white group-hover:text-red-500 transition-colors">
                     {project.title}
@@ -96,7 +97,7 @@ const ProjectShowcase = () => {
             </motion.div>
           ))}
         </div>
-        
+
         {/* Spacer for offset grid */}
         <div className="h-24 hidden md:block" />
       </div>
